@@ -20,7 +20,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.delete("testTable", null, null);
         db.execSQL("CREATE TABLE IF NOT EXISTS testTable(id integer primary key, name " +
                 "text," +
                 "password text);");
@@ -36,12 +35,19 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void add(String id, String name, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
         ContentValues temp = new ContentValues();
         temp.put("id", id);
         temp.put("name", name);
         temp.put("password", password);
-        db.insert("testTable", null, temp);
-        System.out.println("INSERT: " + id);
+        try {
+            db.insert("testTable", null, temp);
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
+        db.close();
     }
 
     public String deleteFirst() {
@@ -50,20 +56,44 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor cursor = db.query("testTable", null, null, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                System.out.println("Delete first");
-                String rowId = cursor.getString(cursor.getColumnIndex("id"));
-                db.delete("testTable", "id=?", new String[]{rowId});
-                System.out.println("DELETE: " + rowId);
+                db.beginTransaction();
+                try {
+                    String rowId = cursor.getString(cursor.getColumnIndex("id"));
+                    db.delete("testTable", "id=" + rowId, null);
+                    db.setTransactionSuccessful();
+                }
+                finally{
+                    db.endTransaction();
+                }
                 cursor.close();
+                db.close();
                 return "";
             } else {
-                System.out.println("Nothing to delete");
                 cursor.close();
+                db.close();
                 return "Nothing to delete";
             }
         }
         cursor.close();
+        db.close();
         return "";
+    }
+
+    public int getNumRows(){
+        int count = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query("testTable", null, null, null, null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                while(!cursor.isAfterLast()){
+                    count++;
+                    cursor.moveToNext();
+                }
+            }
+        }
+        cursor.close();
+        db.close();
+        return count;
     }
 
     public String update() {
@@ -72,13 +102,15 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor cursor = db.query("testTable", null, null, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                do {
-                    String rowId = cursor.getString(cursor.getColumnIndex("id"));
-                    text += rowId + " ";
-                } while (cursor.moveToNext());
+
+                while(!cursor.isAfterLast()){
+                    text+=cursor.getString(cursor.getColumnIndex("id")) + " ";
+                    cursor.moveToNext();
+                }
             }
         }
         cursor.close();
+        db.close();
         return text;
     }
 
