@@ -44,10 +44,12 @@ public class DBHelper extends SQLiteOpenHelper {
             db.insert("testTable", null, temp);
             db.setTransactionSuccessful();
         }
-        finally {
+        catch (Exception e){
+            throw e;
+        }
+        finally{
             db.endTransaction();
         }
-        db.close();
     }
 
     public String deleteFirst() {
@@ -60,22 +62,22 @@ public class DBHelper extends SQLiteOpenHelper {
                 try {
                     String rowId = cursor.getString(cursor.getColumnIndex("id"));
                     db.delete("testTable", "id=" + rowId, null);
+                    System.out.println("BEFORE");
                     db.setTransactionSuccessful();
+                    System.out.println("AFTER");
                 }
                 finally{
+                    System.out.println("FINALLY");
                     db.endTransaction();
                 }
                 cursor.close();
-                db.close();
                 return "";
             } else {
                 cursor.close();
-                db.close();
                 return "Nothing to delete";
             }
         }
         cursor.close();
-        db.close();
         return "";
     }
 
@@ -92,7 +94,6 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         }
         cursor.close();
-        db.close();
         return count;
     }
 
@@ -110,7 +111,6 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         }
         cursor.close();
-        db.close();
         return text;
     }
 

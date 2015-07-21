@@ -66,8 +66,8 @@ public class SQLTest extends AndroidTestCase{
         Cursor cursor = temp.query("testTable", null, null, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                rowId = cursor.getString(cursor.getColumnIndex("name"));
-                assertEquals(rowId, "Andrew");
+                rowId = cursor.getString(cursor.getColumnIndex("id"));
+                assertEquals(rowId, "70");
             }
         }
         assertEquals(db.getNumRows(), 3);
@@ -75,16 +75,15 @@ public class SQLTest extends AndroidTestCase{
         assertEquals(blah, "");
         assertEquals(db.getNumRows(), 2);
         assertEquals(db.update(), "100 200 ");
+        cursor = temp.query("testTable", null,null,null,null,null,null);
         if (cursor.moveToFirst()) {
-            rowId = cursor.getString(cursor.getColumnIndex("name"));
-            assertEquals(rowId, "Andrew");
+            assertEquals(db.getNumRows(), 2);
+            rowId = cursor.getString(cursor.getColumnIndex("id"));
+            assertEquals(rowId, "100");
         }
         cursor.moveToNext();
-        rowId = cursor.getString(cursor.getColumnIndex("name"));
-        assertEquals(rowId, "Aditya");
-        cursor.moveToNext();
-        rowId = cursor.getString(cursor.getColumnIndex("name"));
-        assertEquals(rowId, "Elliot");
+        rowId = cursor.getString(cursor.getColumnIndex("id"));
+        assertEquals(rowId, "200");
     }
 
 }
